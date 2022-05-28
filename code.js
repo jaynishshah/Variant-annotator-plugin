@@ -41,7 +41,7 @@
 // })();
 
 // Check if the user has selected an object that's not a component instance
-if (figma.currentPage.selection.length !== 1) {
+if (figma.currentPage.selection.length === 0) {
     figma.closePlugin("Nothing selected. Please select component instances to annotate.")
 }
 
@@ -49,11 +49,22 @@ async function main() {
 
 //Defining a component instance
 let selectedInstance = figma.currentPage.selection[0];
-let positionX = (selectedInstance.x);
-let positionY = (selectedInstance.y) - 100;
+let positionX = (selectedInstance.absoluteRenderBounds.x);
+let positionY = (selectedInstance.absoluteRenderBounds.y) - 80;
 
-const instancePropInfo = [selectedInstance.variantProperties];
-const instancePropText = JSON.stringify(instancePropInfo);
+const instancePropInfo = selectedInstance.variantProperties;
+var propString = '';
+for (let key in instancePropInfo) {
+    //console.log(key + ':' + theme[key]);
+    if (!propString) {
+        propString = key + ':' + instancePropInfo[key];
+    } else {
+        propString += '\n' + key + ':' + instancePropInfo[key];
+    }
+}
+
+//let instancePropText = JSON.stringify(instancePropInfo);
+//let variantPropText = instancePropText.valueOf();
 
 await figma.loadFontAsync({
             family: 'Inter',
@@ -70,10 +81,10 @@ else if (selectedInstance.type === 'INSTANCE') {
     const nodes = [];
         for (let i = 0; i < 1; i++) {
             const text = figma.createText();
-             text.x = positionX;
-             text.y = positionY;
              text.fontSize = 16;
-             text.characters = instancePropText;
+             text.characters = propString;
+             text.x = positionX;
+             text.y = positionY-(text.absoluteRenderBounds.height);
             figma.currentPage.appendChild(text);
             nodes.push(text);
         }
