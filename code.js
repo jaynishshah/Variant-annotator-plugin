@@ -1,4 +1,4 @@
-// Check if the user has selected an object that's not a component instance
+// Check if the user has selected an object that's not a component instance 
 if (figma.currentPage.selection.length === 0) {
     figma.closePlugin("Nothing selected. Please select component instances to annotate.")
 }
