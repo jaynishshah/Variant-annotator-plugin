@@ -20,6 +20,7 @@ async function main() {
             figma.closePlugin("Please select ONLY component instances to annotate.")
         }
 
+        if (item.type === 'INSTANCE')  {
         //console.log(item);
         let positionX = (item.absoluteRenderBounds.x);
         let positionY = (item.absoluteRenderBounds.y) - 80;
@@ -36,7 +37,7 @@ async function main() {
             propString += '\n' + key + ':' + instancePropInfo[key];
         }
         }
-        console.log(propString);
+        //console.log(propString);
 
         const nodes = [];
         const text = figma.createText();
@@ -47,7 +48,7 @@ async function main() {
         figma.currentPage.appendChild(text);
         nodes.push(text);
         figma.closePlugin("Annotating Variants");
-
+    }
     }
 
 }
