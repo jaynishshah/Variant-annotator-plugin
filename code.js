@@ -20,7 +20,11 @@ async function main() {
             figma.closePlugin("Please select ONLY component instances to annotate.")
         }
 
-        if (item.type === 'INSTANCE')  {
+        if (item.variantProperties === null) {
+            figma.closePlugin("No variant properties found.")
+        } 
+        
+        else if (item.type === 'INSTANCE')  {
         //console.log(item);
         let positionX = (item.absoluteRenderBounds.x);
         let positionY = (item.absoluteRenderBounds.y) - 80;
