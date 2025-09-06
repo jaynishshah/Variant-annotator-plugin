@@ -49,16 +49,28 @@ async function main() {
       lines.push(`${key}: ${value}`);
     }
 
-    const propString = lines.join('\n');
+    const valueString = lines.slice(1).join('\n');
 
-    const text = figma.createText();
-    text.fontName = { family: 'Inter', style: 'Regular' };
-    text.fontSize = 16;
-    text.characters = propString;
-    text.setRangeFontName(0, componentName.length, { family: 'Inter', style: 'Bold' });
-    figma.currentPage.appendChild(text);
-    text.x = positionX;
-    text.y = positionY - text.height;
+    const titleText = figma.createText();
+    titleText.fontName = { family: 'Inter', style: 'Bold' };
+    titleText.fontSize = 16;
+    titleText.characters = componentName;
+    titleText.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+    figma.currentPage.appendChild(titleText);
+
+    const valueText = figma.createText();
+    valueText.fontName = { family: 'Inter', style: 'Regular' };
+    valueText.fontSize = 16;
+    valueText.characters = valueString;
+    valueText.fills = [
+      { type: 'SOLID', color: { r: 1, g: 214 / 255, b: 20 / 255 } },
+    ];
+    figma.currentPage.appendChild(valueText);
+
+    titleText.x = positionX;
+    valueText.x = positionX;
+    valueText.y = positionY - valueText.height;
+    titleText.y = valueText.y - titleText.height;
   }
 
   figma.closePlugin('Annotating Variants');
