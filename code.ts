@@ -34,10 +34,42 @@ async function main() {
         ? mainComponent.parent.name
         : item.name;
 
-    const lines: string[] = [componentName];
+    const primaryFrame = figma.createFrame();
+    primaryFrame.layoutMode = 'VERTICAL';
+    primaryFrame.primaryAxisSizingMode = 'AUTO';
+    primaryFrame.counterAxisSizingMode = 'AUTO';
+    primaryFrame.fills = [];
+
+    const title = figma.createText();
+    title.fontName = { family: 'Inter', style: 'Bold' };
+    title.fontSize = 16;
+    title.characters = componentName;
+    primaryFrame.appendChild(title);
+
+    function createRow(rowTitle: string, rowValue: string) {
+      const row = figma.createFrame();
+      row.layoutMode = 'HORIZONTAL';
+      row.primaryAxisSizingMode = 'AUTO';
+      row.counterAxisSizingMode = 'AUTO';
+      row.fills = [];
+
+      const titleNode = figma.createText();
+      titleNode.fontName = { family: 'Inter', style: 'Bold' };
+      titleNode.fontSize = 16;
+      titleNode.characters = `${rowTitle}:`;
+
+      const valueNode = figma.createText();
+      valueNode.fontName = { family: 'Inter', style: 'Regular' };
+      valueNode.fontSize = 16;
+      valueNode.characters = rowValue;
+
+      row.appendChild(titleNode);
+      row.appendChild(valueNode);
+      primaryFrame.appendChild(row);
+    }
 
     for (const key in variantProps) {
-      lines.push(`${key}: ${variantProps[key]}`);
+      createRow(key, `${variantProps[key]}`);
     }
 
     for (const key in componentProps) {
@@ -45,20 +77,16 @@ async function main() {
       if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
         continue;
       }
-      const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
-      lines.push(`${key}: ${value}`);
+      const value =
+        typeof prop === 'object' && prop !== null && 'value' in prop
+          ? (prop as any).value
+          : (prop as any);
+      createRow(key, `${value}`);
     }
 
-    const propString = lines.join('\n');
-
-    const text = figma.createText();
-    text.fontName = { family: 'Inter', style: 'Regular' };
-    text.fontSize = 16;
-    text.characters = propString;
-    text.setRangeFontName(0, componentName.length, { family: 'Inter', style: 'Bold' });
-    figma.currentPage.appendChild(text);
-    text.x = positionX;
-    text.y = positionY - text.height;
+    figma.currentPage.appendChild(primaryFrame);
+    primaryFrame.x = positionX;
+    primaryFrame.y = positionY - primaryFrame.height;
   }
 
   figma.closePlugin('Annotating Variants');
