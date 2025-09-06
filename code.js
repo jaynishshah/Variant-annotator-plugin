@@ -43,6 +43,9 @@ function main() {
             }
             for (const key in componentProps) {
                 const prop = componentProps[key];
+                if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
+                    continue;
+                }
                 const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
                 lines.push(`${key}: ${value}`);
             }
