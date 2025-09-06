@@ -55,9 +55,29 @@ function main() {
             text.fontSize = 16;
             text.characters = propString;
             text.setRangeFontName(0, componentName.length, { family: 'Inter', style: 'Bold' });
-            figma.currentPage.appendChild(text);
-            text.x = positionX;
-            text.y = positionY - text.height;
+            const frame = figma.createFrame();
+            frame.layoutMode = 'VERTICAL';
+            frame.counterAxisSizingMode = 'AUTO';
+            frame.primaryAxisSizingMode = 'AUTO';
+            frame.paddingLeft = frame.paddingRight = frame.paddingTop = frame.paddingBottom = 8;
+            frame.strokes = [
+                { type: 'SOLID', color: { r: 0.48235294, g: 0.38039216, b: 1 } },
+            ];
+            frame.strokeWeight = 1;
+            frame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+            frame.appendChild(text);
+            figma.currentPage.appendChild(frame);
+            frame.x = positionX;
+            frame.y = positionY - frame.height;
+            const connector = figma.createConnector();
+            connector.connectorStart = { endpointNodeId: frame.id, magnet: 'BOTTOM' };
+            connector.connectorEnd = { endpointNodeId: item.id, magnet: 'TOP' };
+            connector.connectorEndStrokeCap = 'ARROW_EQUILATERAL';
+            connector.strokes = [
+                { type: 'SOLID', color: { r: 0.48235294, g: 0.38039216, b: 1 } },
+            ];
+            connector.strokeWeight = 2;
+            figma.currentPage.appendChild(connector);
         }
         figma.closePlugin('Annotating Variants');
     });
