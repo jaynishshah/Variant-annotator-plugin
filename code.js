@@ -37,9 +37,19 @@ function main() {
                 item.name === mainComponent.name
                 ? mainComponent.parent.name
                 : item.name;
+            const propDefinitions = (mainComponent === null || mainComponent === void 0 ? void 0 : mainComponent.componentPropertyDefinitions) || {};
+            const keyNameMap = {};
+            for (const key in propDefinitions) {
+                const def = propDefinitions[key];
+                if (def && typeof def === 'object' && 'name' in def) {
+                    keyNameMap[key] = def.name;
+                }
+            }
+            const getPropName = (key) => keyNameMap[key] || key;
             const lines = [componentName];
             for (const key in variantProps) {
-                lines.push(`${key}: ${variantProps[key]}`);
+                const name = getPropName(key);
+                lines.push(`${name}: ${variantProps[key]}`);
             }
             for (const key in componentProps) {
                 const prop = componentProps[key];
@@ -47,7 +57,8 @@ function main() {
                     continue;
                 }
                 const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
-                lines.push(`${key}: ${value}`);
+                const name = getPropName(key);
+                lines.push(`${name}: ${value}`);
             }
             const propString = lines.join('\n');
             const text = figma.createText();

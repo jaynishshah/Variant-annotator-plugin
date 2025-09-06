@@ -34,10 +34,22 @@ async function main() {
         ? mainComponent.parent.name
         : item.name;
 
+    const propDefinitions = (mainComponent as any)?.componentPropertyDefinitions || {};
+    const keyNameMap: { [key: string]: string } = {};
+    for (const key in propDefinitions) {
+      const def = propDefinitions[key];
+      if (def && typeof def === 'object' && 'name' in def) {
+        keyNameMap[key] = def.name as string;
+      }
+    }
+
+    const getPropName = (key: string) => keyNameMap[key] || key;
+
     const lines: string[] = [componentName];
 
     for (const key in variantProps) {
-      lines.push(`${key}: ${variantProps[key]}`);
+      const name = getPropName(key);
+      lines.push(`${name}: ${variantProps[key]}`);
     }
 
     for (const key in componentProps) {
@@ -46,7 +58,8 @@ async function main() {
         continue;
       }
       const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
-      lines.push(`${key}: ${value}`);
+      const name = getPropName(key);
+      lines.push(`${name}: ${value}`);
     }
 
     const propString = lines.join('\n');
