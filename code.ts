@@ -2,13 +2,17 @@ if (figma.currentPage.selection.length === 0) {
   figma.closePlugin("Nothing selected. Please select component instances to annotate.");
 }
 
+figma.showUI(__html__, { width: 240, height: 80 });
+
 async function main() {
   await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
   await figma.loadFontAsync({ family: 'Inter', style: 'Bold' });
 
   const selectedInstances = figma.currentPage.selection;
+  const total = selectedInstances.length;
 
-  for (const item of selectedInstances) {
+  for (let i = 0; i < total; i++) {
+    const item = selectedInstances[i];
     if (item.type !== 'INSTANCE') {
       figma.closePlugin('Please select ONLY component instances to annotate.');
       return;
@@ -45,7 +49,10 @@ async function main() {
       if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
         continue;
       }
-      const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
+      const value =
+        typeof prop === 'object' && prop !== null && 'value' in prop
+          ? prop.value
+          : prop;
       lines.push(`${key}: ${value}`);
     }
 
@@ -59,9 +66,13 @@ async function main() {
     figma.currentPage.appendChild(text);
     text.x = positionX;
     text.y = positionY - text.height;
+
+    figma.ui.postMessage({ type: 'progress', current: i + 1, total });
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
-  figma.closePlugin('Annotating Variants');
+  figma.ui.postMessage({ type: 'complete', total });
+  setTimeout(() => figma.closePlugin('Annotating Variants'), 500);
 }
 
 main();
