@@ -26,7 +26,13 @@ async function main() {
 
     const positionX = item.absoluteRenderBounds!.x;
     const positionY = item.absoluteRenderBounds!.y - 80;
-    const componentName = item.mainComponent ? item.mainComponent.name : item.name;
+    const mainComponent = item.mainComponent;
+    const componentName =
+      mainComponent &&
+      mainComponent.parent?.type === 'COMPONENT_SET' &&
+      item.name === mainComponent.name
+        ? mainComponent.parent.name
+        : item.name;
 
     const lines: string[] = [componentName];
 

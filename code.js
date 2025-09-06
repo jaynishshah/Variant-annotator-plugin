@@ -11,6 +11,7 @@ if (figma.currentPage.selection.length === 0) {
     figma.closePlugin("Nothing selected. Please select component instances to annotate.");
 }
 function main() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         yield figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
         yield figma.loadFontAsync({ family: 'Inter', style: 'Bold' });
@@ -30,7 +31,12 @@ function main() {
             }
             const positionX = item.absoluteRenderBounds.x;
             const positionY = item.absoluteRenderBounds.y - 80;
-            const componentName = item.mainComponent ? item.mainComponent.name : item.name;
+            const mainComponent = item.mainComponent;
+            const componentName = mainComponent &&
+                ((_a = mainComponent.parent) === null || _a === void 0 ? void 0 : _a.type) === 'COMPONENT_SET' &&
+                item.name === mainComponent.name
+                ? mainComponent.parent.name
+                : item.name;
             const lines = [componentName];
             for (const key in variantProps) {
                 lines.push(`${key}: ${variantProps[key]}`);
