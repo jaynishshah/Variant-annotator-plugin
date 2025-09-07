@@ -1,17 +1,12 @@
-<h2>Rectangle Creator</h2>
-<p>Count: <input id="count" value="5"></p>
-<button id="create">Create</button>
-<button id="cancel">Cancel</button>
+<div id="progress">Starting...</div>
 <script>
-
-document.getElementById('create').onclick = () => {
-  const textbox = document.getElementById('count');
-  const count = parseInt(textbox.value, 10);
-  parent.postMessage({ pluginMessage: { type: 'create-rectangles', count } }, '*')
-}
-
-document.getElementById('cancel').onclick = () => {
-  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
-}
-
+onmessage = (event) => {
+  const msg = event.data.pluginMessage;
+  if (msg.type === 'progress') {
+    const { current, total } = msg;
+    document.getElementById('progress').textContent = `Annotation ${current} / ${total}`;
+  } else if (msg.type === 'complete') {
+    document.getElementById('progress').textContent = 'Done';
+  }
+};
 </script>
