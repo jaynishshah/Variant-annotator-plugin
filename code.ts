@@ -108,15 +108,42 @@ async function main() {
     const offset = 16;
     primaryFrame.y = bounds.y - primaryFrame.height - offset;
 
-    const connector = figma.createConnector();
-    connector.strokeWeight = 1;
-    connector.strokes = [
-      { type: 'SOLID', color: { r: 123 / 255, g: 97 / 255, b: 1 } },
-    ];
-    connector.connectorStart = { endpointNodeId: primaryFrame.id, magnet: 'AUTO' };
-    connector.connectorEnd = { endpointNodeId: item.id, magnet: 'AUTO' };
-    connector.connectorEndStrokeCap = 'ARROW_EQUILATERAL';
-    figma.currentPage.appendChild(connector);
+    try {
+      if ('createConnector' in figma) {
+        const connector = figma.createConnector();
+        connector.strokeWeight = 1;
+        connector.strokes = [
+          { type: 'SOLID', color: { r: 123 / 255, g: 97 / 255, b: 1 } },
+        ];
+        connector.connectorStart = {
+          endpointNodeId: primaryFrame.id,
+          magnet: 'AUTO',
+        };
+        connector.connectorEnd = { endpointNodeId: item.id, magnet: 'AUTO' };
+        connector.connectorEndStrokeCap = 'ARROW_EQUILATERAL';
+        figma.currentPage.appendChild(connector);
+      } else {
+        const line = figma.createLine();
+        line.strokeWeight = 1;
+        line.strokes = [
+          { type: 'SOLID', color: { r: 123 / 255, g: 97 / 255, b: 1 } },
+        ];
+        const startX = primaryFrame.x + primaryFrame.width / 2;
+        const startY = primaryFrame.y + primaryFrame.height;
+        const endX = item.x + item.width / 2;
+        const endY = item.y;
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        line.x = startX;
+        line.y = startY;
+        line.resize(length, 0);
+        line.rotation = (Math.atan2(dy, dx) * 180) / Math.PI;
+        figma.currentPage.appendChild(line);
+      }
+    } catch (error) {
+      console.error('Failed to create connector', error);
+    }
 
     await new Promise((r) => setTimeout(r, 0));
   }
