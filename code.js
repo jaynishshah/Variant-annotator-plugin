@@ -37,27 +37,48 @@ function main() {
                 item.name === mainComponent.name
                 ? mainComponent.parent.name
                 : item.name;
-            const lines = [componentName];
+            const lines = [
+                { text: componentName, boldLength: componentName.length },
+            ];
             for (const key in variantProps) {
-                lines.push(`${key}: ${variantProps[key]}`);
+                const line = `${key}: ${variantProps[key]}`;
+                lines.push({ text: line, boldLength: key.length + 1 });
             }
             for (const key in componentProps) {
                 const prop = componentProps[key];
                 if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
                     continue;
                 }
-                const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
-                lines.push(`${key}: ${value}`);
+                const value = typeof prop === 'object' && prop !== null && 'value' in prop
+                    ? prop.value
+                    : prop;
+                const line = `${key}: ${value}`;
+                lines.push({ text: line, boldLength: key.length + 1 });
             }
-            const propString = lines.join('\n');
-            const text = figma.createText();
-            text.fontName = { family: 'Inter', style: 'Regular' };
-            text.fontSize = 16;
-            text.characters = propString;
-            text.setRangeFontName(0, componentName.length, { family: 'Inter', style: 'Bold' });
-            figma.currentPage.appendChild(text);
-            text.x = positionX;
-            text.y = positionY - text.height;
+            const container = figma.createFrame();
+            container.layoutMode = 'VERTICAL';
+            container.paddingTop = container.paddingBottom = 8;
+            container.paddingLeft = container.paddingRight = 8;
+            container.itemSpacing = 4;
+            container.cornerRadius = 2;
+            for (const line of lines) {
+                const lineFrame = figma.createFrame();
+                lineFrame.layoutMode = 'HORIZONTAL';
+                lineFrame.fills = [];
+                const textNode = figma.createText();
+                textNode.fontName = { family: 'Inter', style: 'Regular' };
+                textNode.fontSize = 16;
+                textNode.characters = line.text;
+                textNode.setRangeFontName(0, line.boldLength, {
+                    family: 'Inter',
+                    style: 'Bold',
+                });
+                lineFrame.appendChild(textNode);
+                container.appendChild(lineFrame);
+            }
+            figma.currentPage.appendChild(container);
+            container.x = positionX;
+            container.y = positionY - container.height;
         }
         figma.closePlugin('Annotating Variants');
     });
