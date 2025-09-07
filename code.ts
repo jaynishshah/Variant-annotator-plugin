@@ -33,6 +33,7 @@ async function main() {
     const hasVariantProps = Object.keys(variantProps).length > 0;
     const hasComponentProps = Object.keys(componentProps).length > 0;
     if (!hasVariantProps && !hasComponentProps) {
+      figma.notify(`Instance "${item.name}" has no annotatable properties.`);
       continue;
     }
 
