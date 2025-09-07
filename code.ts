@@ -45,11 +45,21 @@ async function main() {
 
     const getPropName = (key: string) => keyNameMap[key] || key;
 
-    const lines: string[] = [componentName];
+    const lines: string[] = [];
+    const seen = new Set<string>();
+
+    const addLine = (line: string) => {
+      if (!seen.has(line)) {
+        lines.push(line);
+        seen.add(line);
+      }
+    };
+
+    addLine(componentName);
 
     for (const key in variantProps) {
       const name = getPropName(key);
-      lines.push(`${name}: ${variantProps[key]}`);
+      addLine(`${name}: ${variantProps[key]}`);
     }
 
     for (const key in componentProps) {
@@ -59,7 +69,7 @@ async function main() {
       }
       const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
       const name = getPropName(key);
-      lines.push(`${name}: ${value}`);
+      addLine(`${name}: ${value}`);
     }
 
     const propString = lines.join('\n');

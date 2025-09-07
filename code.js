@@ -46,10 +46,18 @@ function main() {
                 }
             }
             const getPropName = (key) => keyNameMap[key] || key;
-            const lines = [componentName];
+            const lines = [];
+            const seen = new Set();
+            const addLine = (line) => {
+                if (!seen.has(line)) {
+                    lines.push(line);
+                    seen.add(line);
+                }
+            };
+            addLine(componentName);
             for (const key in variantProps) {
                 const name = getPropName(key);
-                lines.push(`${name}: ${variantProps[key]}`);
+                addLine(`${name}: ${variantProps[key]}`);
             }
             for (const key in componentProps) {
                 const prop = componentProps[key];
@@ -58,7 +66,7 @@ function main() {
                 }
                 const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
                 const name = getPropName(key);
-                lines.push(`${name}: ${value}`);
+                addLine(`${name}: ${value}`);
             }
             const propString = lines.join('\n');
             const text = figma.createText();
