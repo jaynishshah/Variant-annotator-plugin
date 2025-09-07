@@ -13,8 +13,8 @@ if (figma.currentPage.selection.length === 0) {
 function main() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        yield figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
-        yield figma.loadFontAsync({ family: 'Inter', style: 'Bold' });
+        yield figma.loadFontAsync({ family: 'Roboto Mono', style: 'Regular' });
+        yield figma.loadFontAsync({ family: 'Roboto Mono', style: 'Bold' });
         const selectedInstances = figma.currentPage.selection;
         for (const item of selectedInstances) {
             if (item.type !== 'INSTANCE') {
@@ -51,10 +51,10 @@ function main() {
             }
             const propString = lines.join('\n');
             const text = figma.createText();
-            text.fontName = { family: 'Inter', style: 'Regular' };
+            text.fontName = { family: 'Roboto Mono', style: 'Regular' };
             text.fontSize = 16;
             text.characters = propString;
-            text.setRangeFontName(0, componentName.length, { family: 'Inter', style: 'Bold' });
+            text.setRangeFontName(0, componentName.length, { family: 'Roboto Mono', style: 'Bold' });
             figma.currentPage.appendChild(text);
             text.x = positionX;
             text.y = positionY - text.height;
