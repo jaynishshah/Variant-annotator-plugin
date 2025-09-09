@@ -37,7 +37,18 @@ async function main() {
       continue;
     }
 
-    const bounds = item.absoluteRenderBounds!;
+    const bounds =
+      item.absoluteRenderBounds ?? {
+        x: item.x,
+        y: item.y,
+        width: item.width,
+        height: item.height,
+      };
+    if (!item.absoluteRenderBounds) {
+      figma.notify(
+        `Instance "${item.name}" has no render bounds; using local coordinates.`
+      );
+    }
     const mainComponent = item.mainComponent;
     const componentName =
       mainComponent &&

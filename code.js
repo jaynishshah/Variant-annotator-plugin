@@ -12,7 +12,7 @@ if (figma.currentPage.selection.length === 0) {
 }
 figma.showUI(__html__, { width: 160, height: 60 });
 function main() {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield Promise.all([
@@ -20,7 +20,7 @@ function main() {
                 figma.loadFontAsync({ family: 'Roboto Mono', style: 'Bold' }),
             ]);
         }
-        catch (_d) {
+        catch (_e) {
             figma.closePlugin('Roboto Mono font is not available.');
             return;
         }
@@ -41,10 +41,18 @@ function main() {
                 figma.notify(`Instance "${item.name}" has no annotatable properties.`);
                 continue;
             }
-            const bounds = item.absoluteRenderBounds;
+            const bounds = (_a = item.absoluteRenderBounds) !== null && _a !== void 0 ? _a : {
+                x: item.x,
+                y: item.y,
+                width: item.width,
+                height: item.height,
+            };
+            if (!item.absoluteRenderBounds) {
+                figma.notify(`Instance "${item.name}" has no render bounds; using local coordinates.`);
+            }
             const mainComponent = item.mainComponent;
             const componentName = mainComponent &&
-                ((_a = mainComponent.parent) === null || _a === void 0 ? void 0 : _a.type) === 'COMPONENT_SET' &&
+                ((_b = mainComponent.parent) === null || _b === void 0 ? void 0 : _b.type) === 'COMPONENT_SET' &&
                 item.name === mainComponent.name
                 ? mainComponent.parent.name
                 : item.name;
@@ -61,7 +69,7 @@ function main() {
                     continue;
                 }
                 const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
-                const name = (_c = (_b = definitions[key]) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : key;
+                const name = (_d = (_c = definitions[key]) === null || _c === void 0 ? void 0 : _c.name) !== null && _d !== void 0 ? _d : key;
                 linePairs.push({ title: name, value: String(value) });
             }
             const annotationFrame = figma.createFrame();
