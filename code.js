@@ -37,17 +37,29 @@ function main() {
                 item.name === mainComponent.name
                 ? mainComponent.parent.name
                 : item.name;
+            const propDefinitions = (mainComponent === null || mainComponent === void 0 ? void 0 : mainComponent.componentPropertyDefinitions) || {};
+            const propIdNameMap = {};
+            for (const id in propDefinitions) {
+                const def = propDefinitions[id];
+                if (def && typeof def === 'object' && 'name' in def) {
+                    propIdNameMap[id] = def.name;
+                }
+            }
             const lines = [componentName];
             for (const key in variantProps) {
                 lines.push(`${key}: ${variantProps[key]}`);
             }
             for (const key in componentProps) {
+                const name = propIdNameMap[key];
+                if (!name) {
+                    continue;
+                }
                 const prop = componentProps[key];
                 if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
                     continue;
                 }
                 const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
-                lines.push(`${key}: ${value}`);
+                lines.push(`${name}: ${value}`);
             }
             const propString = lines.join('\n');
             const text = figma.createText();
