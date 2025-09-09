@@ -3,8 +3,15 @@ if (figma.currentPage.selection.length === 0) {
 }
 
 async function main() {
-  await figma.loadFontAsync({ family: 'Roboto Mono', style: 'Regular' });
-  await figma.loadFontAsync({ family: 'Roboto Mono', style: 'Bold' });
+  try {
+    await Promise.all([
+      figma.loadFontAsync({ family: 'Roboto Mono', style: 'Regular' }),
+      figma.loadFontAsync({ family: 'Roboto Mono', style: 'Bold' }),
+    ]);
+  } catch {
+    figma.closePlugin('Roboto Mono font is not available.');
+    return;
+  }
 
   const selectedInstances = figma.currentPage.selection;
 
@@ -20,12 +27,10 @@ async function main() {
     const hasVariantProps = Object.keys(variantProps).length > 0;
     const hasComponentProps = Object.keys(componentProps).length > 0;
     if (!hasVariantProps && !hasComponentProps) {
-      figma.closePlugin('No variant or component properties found.');
-      return;
+      continue;
     }
 
-    const positionX = item.absoluteRenderBounds!.x;
-    const positionY = item.absoluteRenderBounds!.y - 80;
+    const bounds = item.absoluteRenderBounds!;
     const mainComponent = item.mainComponent;
     const componentName =
       mainComponent &&
@@ -34,31 +39,80 @@ async function main() {
         ? mainComponent.parent.name
         : item.name;
 
-    const lines: string[] = [componentName];
+    const linePairs: { title: string; value: string }[] = [
+      { title: 'Component', value: componentName },
+    ];
 
     for (const key in variantProps) {
-      lines.push(`${key}: ${variantProps[key]}`);
+      linePairs.push({ title: key, value: String(variantProps[key]) });
     }
 
+    const definitions = (mainComponent as any)?.componentPropertyDefinitions || {};
     for (const key in componentProps) {
       const prop = componentProps[key];
       if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
         continue;
       }
-      const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
-      lines.push(`${key}: ${value}`);
+      const value =
+        typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
+      const name = (definitions as any)[key]?.name ?? key;
+      linePairs.push({ title: name, value: String(value) });
     }
 
-    const propString = lines.join('\n');
+    const primaryFrame = figma.createFrame();
+    primaryFrame.layoutMode = 'VERTICAL';
+    primaryFrame.primaryAxisSizingMode = 'AUTO';
+    primaryFrame.counterAxisSizingMode = 'AUTO';
+    primaryFrame.paddingLeft = primaryFrame.paddingRight = 8;
+    primaryFrame.paddingTop = primaryFrame.paddingBottom = 8;
+    primaryFrame.itemSpacing = 4;
+    primaryFrame.cornerRadius = 2;
+    primaryFrame.fills = [
+      { type: 'SOLID', color: { r: 18 / 255, g: 18 / 255, b: 18 / 255 }, opacity: 0.3 },
+    ];
+    primaryFrame.strokes = [
+      { type: 'SOLID', color: { r: 123 / 255, g: 97 / 255, b: 1 } },
+    ];
+    primaryFrame.strokeWeight = 1;
 
-    const text = figma.createText();
-    text.fontName = { family: 'Roboto Mono', style: 'Regular' };
-    text.fontSize = 16;
-    text.characters = propString;
-    text.setRangeFontName(0, componentName.length, { family: 'Roboto Mono', style: 'Bold' });
-    figma.currentPage.appendChild(text);
-    text.x = positionX;
-    text.y = positionY - text.height;
+    for (const pair of linePairs) {
+      const row = figma.createFrame();
+      row.layoutMode = 'HORIZONTAL';
+      row.primaryAxisSizingMode = 'AUTO';
+      row.counterAxisSizingMode = 'AUTO';
+      row.itemSpacing = 4;
+
+      const titleNode = figma.createText();
+      titleNode.fontName = { family: 'Roboto Mono', style: 'Regular' };
+      titleNode.characters = `${pair.title}:`;
+      titleNode.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+
+      const valueNode = figma.createText();
+      valueNode.fontName = { family: 'Roboto Mono', style: 'Regular' };
+      valueNode.characters = pair.value;
+      valueNode.fills = [{ type: 'SOLID', color: { r: 1, g: 0.839, b: 0.078 } }];
+
+      row.appendChild(titleNode);
+      row.appendChild(valueNode);
+      primaryFrame.appendChild(row);
+    }
+
+    figma.currentPage.appendChild(primaryFrame);
+    primaryFrame.x = bounds.x;
+    const offset = 16;
+    primaryFrame.y = bounds.y - primaryFrame.height - offset;
+
+    const connector = figma.createConnector();
+    connector.strokeWeight = 1;
+    connector.strokes = [
+      { type: 'SOLID', color: { r: 123 / 255, g: 97 / 255, b: 1 } },
+    ];
+    connector.connectorStart = { endpointNodeId: primaryFrame.id, magnet: 'AUTO' };
+    connector.connectorEnd = { endpointNodeId: item.id, magnet: 'AUTO' };
+    connector.connectorEndStrokeCap = 'ARROW_EQUILATERAL';
+    figma.currentPage.appendChild(connector);
+
+    await new Promise((r) => setTimeout(r, 0));
   }
 
   figma.closePlugin('Annotating Variants');
