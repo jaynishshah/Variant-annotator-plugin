@@ -64,21 +64,21 @@ function main() {
                 const name = (_c = (_b = definitions[key]) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : key;
                 linePairs.push({ title: name, value: String(value) });
             }
-            const primaryFrame = figma.createFrame();
-            primaryFrame.layoutMode = 'VERTICAL';
-            primaryFrame.primaryAxisSizingMode = 'AUTO';
-            primaryFrame.counterAxisSizingMode = 'AUTO';
-            primaryFrame.paddingLeft = primaryFrame.paddingRight = 8;
-            primaryFrame.paddingTop = primaryFrame.paddingBottom = 8;
-            primaryFrame.itemSpacing = 4;
-            primaryFrame.cornerRadius = 2;
-            primaryFrame.fills = [
+            const annotationFrame = figma.createFrame();
+            annotationFrame.layoutMode = 'VERTICAL';
+            annotationFrame.primaryAxisSizingMode = 'AUTO';
+            annotationFrame.counterAxisSizingMode = 'AUTO';
+            annotationFrame.paddingLeft = annotationFrame.paddingRight = 8;
+            annotationFrame.paddingTop = annotationFrame.paddingBottom = 8;
+            annotationFrame.itemSpacing = 4;
+            annotationFrame.cornerRadius = 2;
+            annotationFrame.fills = [
                 { type: 'SOLID', color: { r: 18 / 255, g: 18 / 255, b: 18 / 255 }, opacity: 0.3 },
             ];
-            primaryFrame.strokes = [
+            annotationFrame.strokes = [
                 { type: 'SOLID', color: { r: 123 / 255, g: 97 / 255, b: 1 } },
             ];
-            primaryFrame.strokeWeight = 1;
+            annotationFrame.strokeWeight = 1;
             for (const pair of linePairs) {
                 const row = figma.createFrame();
                 row.layoutMode = 'HORIZONTAL';
@@ -95,12 +95,12 @@ function main() {
                 valueNode.fills = [{ type: 'SOLID', color: { r: 1, g: 0.839, b: 0.078 } }];
                 row.appendChild(titleNode);
                 row.appendChild(valueNode);
-                primaryFrame.appendChild(row);
+                annotationFrame.appendChild(row);
             }
-            figma.currentPage.appendChild(primaryFrame);
-            primaryFrame.x = bounds.x;
+            figma.currentPage.appendChild(annotationFrame);
             const offset = 16;
-            primaryFrame.y = bounds.y - primaryFrame.height - offset;
+            annotationFrame.x = bounds.x + (bounds.width - annotationFrame.width) / 2;
+            annotationFrame.y = bounds.y - annotationFrame.height - offset;
             try {
                 if ('createConnector' in figma) {
                     const connector = figma.createConnector();
@@ -109,7 +109,7 @@ function main() {
                         { type: 'SOLID', color: { r: 123 / 255, g: 97 / 255, b: 1 } },
                     ];
                     connector.connectorStart = {
-                        endpointNodeId: primaryFrame.id,
+                        endpointNodeId: annotationFrame.id,
                         magnet: 'AUTO',
                     };
                     connector.connectorEnd = { endpointNodeId: item.id, magnet: 'AUTO' };
@@ -122,8 +122,8 @@ function main() {
                     line.strokes = [
                         { type: 'SOLID', color: { r: 123 / 255, g: 97 / 255, b: 1 } },
                     ];
-                    const startX = primaryFrame.x + primaryFrame.width / 2;
-                    const startY = primaryFrame.y + primaryFrame.height;
+                    const startX = annotationFrame.x + annotationFrame.width / 2;
+                    const startY = annotationFrame.y + annotationFrame.height;
                     const endX = item.x + item.width / 2;
                     const endY = item.y;
                     const dx = endX - startX;
