@@ -96,15 +96,34 @@ function main() {
             primaryFrame.x = bounds.x;
             const offset = 16;
             primaryFrame.y = bounds.y - primaryFrame.height - offset;
-            const connector = figma.createConnector();
-            connector.strokeWeight = 1;
-            connector.strokes = [
+            const start = {
+                x: primaryFrame.x + primaryFrame.width / 2,
+                y: primaryFrame.y + primaryFrame.height,
+            };
+            const end = {
+                x: bounds.x + bounds.width / 2,
+                y: bounds.y,
+            };
+            const line = figma.createVector();
+            line.strokeWeight = 1;
+            line.strokes = [
                 { type: 'SOLID', color: { r: 123 / 255, g: 97 / 255, b: 1 } },
             ];
-            connector.connectorStart = { endpointNodeId: primaryFrame.id, magnet: 'AUTO' };
-            connector.connectorEnd = { endpointNodeId: item.id, magnet: 'AUTO' };
-            connector.connectorEndStrokeCap = 'ARROW_EQUILATERAL';
-            figma.currentPage.appendChild(connector);
+            line.vectorNetwork = {
+                vertices: [
+                    { x: 0, y: 0, strokeCap: 'NONE' },
+                    {
+                        x: end.x - start.x,
+                        y: end.y - start.y,
+                        strokeCap: 'ARROW_EQUILATERAL',
+                    },
+                ],
+                segments: [{ start: 0, end: 1 }],
+                regions: [],
+            };
+            line.x = start.x;
+            line.y = start.y;
+            figma.currentPage.appendChild(line);
             yield new Promise((r) => setTimeout(r, 0));
         }
         figma.closePlugin('Annotating Variants');
