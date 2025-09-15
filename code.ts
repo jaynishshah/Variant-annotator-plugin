@@ -56,7 +56,6 @@ async function main() {
       if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
         continue;
       }
-
       if (typeof prop === 'object' && prop !== null) {
         let isVisible = true;
         const visibility = (prop as any).visible;
