@@ -10,6 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 if (figma.currentPage.selection.length === 0) {
     figma.closePlugin("Nothing selected. Please select component instances to annotate.");
 }
+function sanitizeName(name) {
+    return name.replace(/#\d+(?::\d+)*$/, '');
+}
 function main() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -37,24 +40,34 @@ function main() {
                 item.name === mainComponent.name
                 ? mainComponent.parent.name
                 : item.name;
-            const lines = [componentName];
+            const sanitizedComponentName = sanitizeName(componentName);
+            const lines = [sanitizedComponentName];
             for (const key in variantProps) {
-                lines.push(`${key}: ${variantProps[key]}`);
+                const sanitizedKey = sanitizeName(key);
+                let value = variantProps[key];
+                if (typeof value === 'string') {
+                    value = sanitizeName(value);
+                }
+                lines.push(`${sanitizedKey}: ${value}`);
             }
             for (const key in componentProps) {
+                const sanitizedKey = sanitizeName(key);
                 const prop = componentProps[key];
                 if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
                     continue;
                 }
-                const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
-                lines.push(`${key}: ${value}`);
+                let value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
+                if (typeof value === 'string') {
+                    value = sanitizeName(value);
+                }
+                lines.push(`${sanitizedKey}: ${value}`);
             }
             const propString = lines.join('\n');
             const text = figma.createText();
             text.fontName = { family: 'Roboto Mono', style: 'Regular' };
             text.fontSize = 16;
             text.characters = propString;
-            text.setRangeFontName(0, componentName.length, { family: 'Roboto Mono', style: 'Bold' });
+            text.setRangeFontName(0, sanitizedComponentName.length, { family: 'Roboto Mono', style: 'Bold' });
             figma.currentPage.appendChild(text);
             text.x = positionX;
             text.y = positionY - text.height;
