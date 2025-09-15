@@ -57,6 +57,9 @@ async function main() {
       if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
         continue;
       }
+      if (typeof prop === 'object' && prop !== null && 'visible' in prop && !prop.visible) {
+        continue;
+      }
       let value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
       if (typeof value === 'string') {
         value = sanitizeName(value);
