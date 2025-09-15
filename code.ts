@@ -52,14 +52,45 @@ async function main() {
     }
 
     for (const key in componentProps) {
-      const sanitizedKey = sanitizeName(key);
       const prop = componentProps[key];
       if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
         continue;
       }
-      if (typeof prop === 'object' && prop !== null && 'visible' in prop && !prop.visible) {
-        continue;
+      if (typeof prop === 'object' && prop !== null) {
+        let isVisible = true;
+        const visibility = (prop as any).visible;
+
+        if (typeof visibility === 'boolean') {
+          isVisible = visibility;
+        } else if (typeof visibility === 'string') {
+          const controller = componentProps[visibility];
+          const controllerValue =
+            typeof controller === 'object' && controller !== null && 'value' in controller
+              ? controller.value
+              : controller;
+          isVisible = Boolean(controllerValue);
+        } else if (visibility && typeof visibility === 'object') {
+          const propertyName = (visibility as any).propertyName;
+          if (propertyName) {
+            const controller = componentProps[propertyName];
+            const controllerValue =
+              typeof controller === 'object' && controller !== null && 'value' in controller
+                ? controller.value
+                : controller;
+            if ('value' in (visibility as any)) {
+              isVisible = controllerValue === (visibility as any).value;
+            } else {
+              isVisible = Boolean(controllerValue);
+            }
+          }
+        }
+
+        if (!isVisible) {
+          continue;
+        }
       }
+
+      const sanitizedKey = sanitizeName(key);
       let value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
       if (typeof value === 'string') {
         value = sanitizeName(value);
