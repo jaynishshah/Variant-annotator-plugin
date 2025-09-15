@@ -11,7 +11,7 @@ if (figma.currentPage.selection.length === 0) {
     figma.closePlugin("Nothing selected. Please select component instances to annotate.");
 }
 function sanitizeName(name) {
-    return name.replace(/#\d+$/, '');
+    return name.replace(/#\d+(?::\d+)*$/, '');
 }
 function main() {
     var _a;

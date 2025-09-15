@@ -3,7 +3,7 @@ if (figma.currentPage.selection.length === 0) {
 }
 
 function sanitizeName(name: string): string {
-  return name.replace(/#\d+$/, '');
+  return name.replace(/#\d+(?::\d+)*$/, '');
 }
 
 async function main() {
