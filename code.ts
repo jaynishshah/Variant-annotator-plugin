@@ -51,14 +51,17 @@ async function main() {
       lines.push(`${sanitizedKey}: ${value}`);
     }
 
+    const defs = ((item.mainComponent as any)?.componentPropertyDefinitions) || {};
+
     for (const key in componentProps) {
       const prop = componentProps[key];
       if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
         continue;
       }
-      if (typeof prop === 'object' && prop !== null) {
+      const def = defs[key];
+      if (def && typeof def === 'object') {
         let isVisible = true;
-        const visibility = (prop as any).visible;
+        const visibility = (def as any).visible;
 
         if (typeof visibility === 'boolean') {
           isVisible = visibility;
