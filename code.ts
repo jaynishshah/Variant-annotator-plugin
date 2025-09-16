@@ -51,7 +51,11 @@ async function main() {
       lines.push(`${sanitizedKey}: ${value}`);
     }
 
-    const defs = ((item.mainComponent as any)?.componentPropertyDefinitions) || {};
+    const defs =
+      (mainComponent &&
+        mainComponent.parent?.type === 'COMPONENT_SET'
+        ? ((mainComponent.parent as any)?.componentPropertyDefinitions as any)
+        : (mainComponent as any)?.componentPropertyDefinitions) || {};
 
     for (const key in componentProps) {
       const prop = componentProps[key];
