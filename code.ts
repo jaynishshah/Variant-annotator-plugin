@@ -2,6 +2,10 @@ if (figma.currentPage.selection.length === 0) {
   figma.closePlugin("Nothing selected. Please select component instances to annotate.");
 }
 
+function sanitizeName(name: string): string {
+  return name.replace(/#\d+(?::\d+)*$/, '');
+}
+
 async function main() {
   await figma.loadFontAsync({ family: 'Roboto Mono', style: 'Regular' });
   await figma.loadFontAsync({ family: 'Roboto Mono', style: 'Bold' });
@@ -34,19 +38,71 @@ async function main() {
         ? mainComponent.parent.name
         : item.name;
 
-    const lines: string[] = [componentName];
+    const sanitizedComponentName = sanitizeName(componentName);
+
+    const lines: string[] = [sanitizedComponentName];
 
     for (const key in variantProps) {
-      lines.push(`${key}: ${variantProps[key]}`);
+      const sanitizedKey = sanitizeName(key);
+      let value = variantProps[key];
+      if (typeof value === 'string') {
+        value = sanitizeName(value);
+      }
+      lines.push(`${sanitizedKey}: ${value}`);
     }
+
+    const defs =
+      (mainComponent &&
+        mainComponent.parent?.type === 'COMPONENT_SET'
+        ? ((mainComponent.parent as any)?.componentPropertyDefinitions as any)
+        : (mainComponent as any)?.componentPropertyDefinitions) || {};
 
     for (const key in componentProps) {
       const prop = componentProps[key];
       if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
         continue;
       }
-      const value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
-      lines.push(`${key}: ${value}`);
+      const def = defs[key];
+      if (def && typeof def === 'object') {
+        let isVisible = true;
+        const visibility = (def as any).visible;
+
+        if (typeof visibility === 'boolean') {
+          isVisible = visibility;
+        } else if (typeof visibility === 'string') {
+          const controller = componentProps[visibility];
+          const controllerValue =
+            typeof controller === 'object' && controller !== null && 'value' in controller
+              ? controller.value
+              : controller;
+          isVisible = Boolean(controllerValue);
+        } else if (visibility && typeof visibility === 'object') {
+          const propertyName = (visibility as any).propertyName;
+          if (propertyName) {
+            const controller = componentProps[propertyName];
+            const controllerValue =
+              typeof controller === 'object' && controller !== null && 'value' in controller
+                ? controller.value
+                : controller;
+            if ('value' in (visibility as any)) {
+              isVisible = controllerValue === (visibility as any).value;
+            } else {
+              isVisible = Boolean(controllerValue);
+            }
+          }
+        }
+
+        if (!isVisible) {
+          continue;
+        }
+      }
+
+      const sanitizedKey = sanitizeName(key);
+      let value = typeof prop === 'object' && prop !== null && 'value' in prop ? prop.value : prop;
+      if (typeof value === 'string') {
+        value = sanitizeName(value);
+      }
+      lines.push(`${sanitizedKey}: ${value}`);
     }
 
     const propString = lines.join('\n');
@@ -55,7 +111,7 @@ async function main() {
     text.fontName = { family: 'Roboto Mono', style: 'Regular' };
     text.fontSize = 16;
     text.characters = propString;
-    text.setRangeFontName(0, componentName.length, { family: 'Roboto Mono', style: 'Bold' });
+    text.setRangeFontName(0, sanitizedComponentName.length, { family: 'Roboto Mono', style: 'Bold' });
     figma.currentPage.appendChild(text);
     text.x = positionX;
     text.y = positionY - text.height;
