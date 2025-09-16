@@ -14,7 +14,7 @@ function sanitizeName(name) {
     return name.replace(/#\d+(?::\d+)*$/, '');
 }
 function main() {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         yield figma.loadFontAsync({ family: 'Roboto Mono', style: 'Regular' });
         yield figma.loadFontAsync({ family: 'Roboto Mono', style: 'Bold' });
@@ -50,14 +50,16 @@ function main() {
                 }
                 lines.push(`${sanitizedKey}: ${value}`);
             }
+            const defs = ((_b = item.mainComponent) === null || _b === void 0 ? void 0 : _b.componentPropertyDefinitions) || {};
             for (const key in componentProps) {
                 const prop = componentProps[key];
                 if (typeof prop === 'object' && prop !== null && prop.type === 'VARIANT') {
                     continue;
                 }
-                if (typeof prop === 'object' && prop !== null) {
+                const def = defs[key];
+                if (def && typeof def === 'object') {
                     let isVisible = true;
-                    const visibility = prop.visible;
+                    const visibility = def.visible;
                     if (typeof visibility === 'boolean') {
                         isVisible = visibility;
                     }
